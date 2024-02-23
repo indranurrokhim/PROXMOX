@@ -1,0 +1,137 @@
+#pertamax
+    sudo su
+    apt update
+    apt upgrade
+
+#ganti timezone
+    timedatectl
+    timedatectl set-timezone Asia/Jakarta
+
+#install apache
+    apt install apache2
+    systemctl status apache2
+    q (tekan q untuk keluar dari info status)
+    #direktori index = /var/www/html/index.html
+    #cek halaman index via browser ketik alamat ip linux
+
+#install php
+    apt install php
+    php -v
+    #masuk direktori index
+    cd /var/www/html
+    ls (list data yg ada di dalam folder)
+    #buat file info.php isi <?php phpinfo();
+    nano info.php
+
+#install mariadb
+    apt install mariadb-server
+    #pengaturan awal
+    mysql_secure_installation
+    [
+        - Enter (karenan masih awal = none)
+        - N (sudah ada aku root yg aman)
+        - N (user root tidak perlu dipassword, sudah aman)
+        - Y (hapus anonymous user, untuk memastikan aman)
+        - Y (agar root tidak bisa diakses dari luar)
+        - Y (hapus database "test")
+        - Y (reload privilege)
+    ]
+    #tambah user admin untuk akes dari luar
+    mariadb
+    [
+    GRANT ALL ON *.* TO 'admin'@'localhost' IDENTIFIED BY 'Ian190308' WITH GRANT OPTION;
+    FLUSH PRIVILEGES;
+    exit
+    ]
+    systemctl status mariadb
+
+#instal phpmyadmin
+    apt install phpmyadmin php-mbstring php-zip php-gd php-json php-curl
+    (
+        php-mbstring: A module for managing non-ASCII strings and convert strings to different encodings
+        php-zip: This extension supports uploading .zip files to phpMyAdmin
+        php-gd: Enables support for the GD Graphics Library
+        php-json: Provides PHP with support for JSON serialization
+        php-curl: Allows PHP to interact with different kinds of servers using different protocols
+    )
+    [
+        pilih apache2
+        password kosongi (tekan enter)
+    ]
+
+#instal web GUI (cockpit)
+    apt install cockpit
+    systemctl start cockpit
+    #akses cockpit dengan ip:9090
+
+#install composer
+    apt install composer
+    #coba install laravel
+    cd /var/www/html
+    composer create-project laravel/laravel laravel
+
+    #atur hak akses (sesuaikan nama folder project)
+    sudo chgrp -R www-data /var/www/html/laravel/
+    sudo chmod -R 775 /var/www/html/laravel/storage
+
+    #buat/arahkan virtual host (sesuaikan nama folder project)
+    cd /etc/apache2/sites-available
+    sudo nano laravel_project.conf
+        [
+            <VirtualHost *:80>
+                #DocumentRoot /var/www/html/
+                DocumentRoot /var/www/html/laravel/public
+                ServerName ipvpsanda
+                #<Directory /var/www/html>
+                <Directory /var/www/html/laravel>
+                    Allow from all
+                    Options None
+                    Require all granted
+                </Directory>
+            </VirtualHost>
+        ]
+
+    #nonaktifkan konfigurasi virtual host bawaan Apache
+    sudo a2dissite 000-default.conf
+
+    #Aktifkan konfigurasi virtual host yang baru
+    sudo a2ensite laravel_project
+
+    #Jalankan Apache rewrite module dan restart web server
+    sudo a2enmod rewrite
+    sudo systemctl restart apache2
+
+#install NPM
+    apt install npm
+
+
+#install git dan github
+    apt install git (biasanya sudah terinstall)
+
+    #coba clone (project public)
+    cd /var/www/html
+    git clone https://github.com/indranurrokhim/project1.git
+
+    apt install gh
+    gh auth status
+    gh auth login
+        [
+            -pilih github.com
+            -pilih https
+            -gunakan github credentials (Y)
+            -login dengan browser
+            -copy one-time code XXXX-XXXX
+            -buka https://github.com/login/device (di browser yg sudah login)
+            -paste one-time code 
+            -klik Authosize github
+            -masukkan password login 
+        ]
+    gh auth status
+
+    #coba clone (project private)
+    cd /var/www/html
+    git clone https://github.com/indranurrokhim/project2.git
+
+    #untuk logout
+    gh auth logout
+
